@@ -74,6 +74,49 @@ Now, when you define a story or update an existing one, you'll automatically get
 
 <CodeSnippets path="button-story-baseline-with-satisfies-story-level.md" />
 
+## Exclude stories from declaration builds
+
+Story files are development-time assets. Consumers of your package use your components, not your stories, so you do not need to emit `.d.ts` files for story modules.
+
+If `"declaration": true` (or [`isolatedDeclarations`](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-5.html#isolated-declarations)) is enabled and stories are part of the same TypeScript program as your library code, `tsc` may fail with errors such as:
+
+```
+TS2742: The inferred type of 'meta' cannot be named without a reference to
+'@storybook/react/node_modules/@storybook/types'. This is likely not portable.
+```
+
+Storybook's types can reference internal modules that are not portable in declaration files. With CSF3, you can sometimes work around this by adding explicit type annotations, but [`satisfies`](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-9.html) does not count as an annotation. [CSF factories](../../api/csf/csf-next.mdx) rely on inference, so explicit annotations are not practical. With `isolatedDeclarations`, every export needs an explicit type, which makes excluding stories from the declaration build the recommended approach.
+
+### Separate `tsconfig.build.json`
+
+Turn off declaration emit in your everyday config, and use a dedicated config when you publish types:
+
+```json title="tsconfig.json"
+{
+  "compilerOptions": {
+    "declaration": false
+  }
+}
+```
+
+```json title="tsconfig.build.json"
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "declaration": true
+  },
+  "exclude": ["**/*.stories.*", "**/*.story.*", ".storybook/**"]
+}
+```
+
+Point your build at the declaration config (for example, `tsc -p tsconfig.build.json`). Your editor and `tsc --noEmit` checks can keep using `tsconfig.json` with stories included.
+
+### Project references (optional)
+
+[TypeScript project references](https://www.typescriptlang.org/docs/handbook/project-references.html) split library code from Storybook files. Tools such as `create-vite` use this pattern. It is more setup than a separate build config, but your IDE can surface type errors from both programs.
+
+Keep stories in a config that does not emit declarations (for example, `tsconfig.storybook.json` with `"declaration": false`), and keep `"include"` / `"exclude"` patterns so story files are only part of that project. Your declaration build config should include application source and exclude `**/*.stories.*`, `**/*.story.*`, and `.storybook/**`.
+
 ## Troubleshooting
 
 ### The `satisfies` operator is not working as expected
