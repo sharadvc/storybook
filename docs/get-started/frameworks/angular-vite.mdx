@@ -192,6 +192,18 @@ If you keep the wiring instead of running the automigration, nothing breaks:
 - **Vitest addon panel** (inside a running `storybook dev`): The addon-vitest child process inherits builder options from the parent process automatically; no extra configuration is needed.
 - **Standalone `yarn vitest`** (without a parent `storybook dev`): Supported via `storybookAngularVitest` from `@storybook/angular-vite/vitest`. Add it to the same `plugins` array as `storybookTest` in your `vitest.config.ts`; it forwards your Angular build options (styles, stylePreprocessorOptions, assets, zoneless) into the channel the framework already reads. If the env var is already set (e.g. a parent `storybook dev` is running), the existing value wins and a warning is logged so you know which options are active.
 
+### bootstrapApplication and moduleMetadata
+
+Storybook mounts each story with Angular's [`bootstrapApplication`](https://angular.dev/api/platform-browser/bootstrapApplication) function instead of bootstrapping a root `NgModule`. Use the [`applicationConfig`](#application-wide-providers) decorator for providers and other options you would pass to `bootstrapApplication` in a standalone application. Use the [`moduleMetadata`](#angular-dependencies) decorator from `@storybook/angular-vite` for NgModule-style metadata (`imports`, `declarations`, `providers`, and `schemas`) that the story's component tree needs.
+
+<CodeSnippets path="angular-vite-bootstrap-application-and-modulemetadata.md" />
+
+<Callout variant="info">
+
+Use `applicationConfig` for application-wide providers, including those from `forRoot()` modules via `importProvidersFrom`. Use `moduleMetadata` when a story needs extra modules, declarations, or providers for its template. Standalone components usually list their own `imports`; add `moduleMetadata` when you still depend on NgModules or on components without a selector.
+
+</Callout>
+
 ### Application-wide providers
 
 If your component relies on application-wide providers (such as those returned by `provide`-style functions or set up by any module using the `forRoot` pattern), apply the `applicationConfig` [decorator](../../writing-stories/decorators.mdx) to supply them via the [bootstrapApplication](https://angular.dev/api/platform-browser/bootstrapApplication) function.

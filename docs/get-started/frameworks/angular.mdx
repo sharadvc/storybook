@@ -64,6 +64,18 @@ You will find the output in the configured `outputDir` (default is `dist/storybo
 
 To make the most out of Storybook in your Angular project, you can set up Compodoc integration and Storybook [decorators](../../writing-stories/decorators.mdx) based on your project needs.
 
+### bootstrapApplication and moduleMetadata
+
+Storybook mounts each story with Angular's [`bootstrapApplication`](https://angular.dev/api/platform-browser/bootstrapApplication) function instead of bootstrapping a root `NgModule`. Use the [`applicationConfig`](#application-wide-providers) decorator for providers and other options you would pass to `bootstrapApplication` in a standalone application. Use the [`moduleMetadata`](#angular-dependencies) decorator from `@storybook/angular` for NgModule-style metadata (`imports`, `declarations`, `providers`, and `schemas`) that the story's component tree needs.
+
+<CodeSnippets path="angular-bootstrap-application-and-modulemetadata.md" />
+
+<Callout variant="info">
+
+Use `applicationConfig` for application-wide providers, including those from `forRoot()` modules via `importProvidersFrom`. Use `moduleMetadata` when a story needs extra modules, declarations, or providers for its template. Standalone components usually list their own `imports`; add `moduleMetadata` when you still depend on NgModules or on components without a selector.
+
+</Callout>
+
 ### Compodoc
 
 You can include JSDoc comments above components, directives, and other parts of your Angular code to include documentation for those elements. Compodoc uses these comments to [generate documentation](../../writing-docs/autodocs.mdx) for your application. In Storybook, it is useful to add explanatory comments above `@Inputs` and `@Outputs`, since these are the main elements that Storybook displays in its user interface. The `@Inputs` and `@Outputs` are elements you can interact with in Storybook, such as [controls](../../essentials/controls.mdx).
